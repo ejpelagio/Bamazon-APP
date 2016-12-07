@@ -13,4 +13,3 @@ var connection = mysql.createConnection({
     database : 'Bamazon_db'
 });
 
-//console.log("Connected My friend")
