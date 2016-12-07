@@ -13,108 +13,100 @@ var connection = mysql.createConnection({
 	  database : 'Bamazon_db'
 });
 
-var productPurchased = [];
-
 connection.connect();
-
-//connect to the mysql database and pull the information from the Products database to display to the user
-connection.query('SELECT product_id, product_name, department_name, price, stock_quantity FROM products', function(err, result){
-	if(err) console.log(err);
-	
-			
-	//creates a table for the information from the mysql database to be placed
-	var table = new Table({
-		head: ['product_id', 'Product Name', 'Price'],
-		style: {
-			head: ['blue'],
-			compact: false,
-			colAligns: ['center'],
-		}
-
-	});
-
-
-	//loops through each item in the mysql database and pushes that information into a new row in the table
-	for(var i = 0; i < result.length; i++){
-		console.log(result[i].product_name);
-		myTable.push(
-			[result[i].product_id, result[i].product_name, result[i].Price]
-		);
-	};
-	//console.log(table.toString());
-
-	purchase();	
-});
-
-//the purchase function so the user can purchase one of the items listed above
-var purchase = function(){
-
-	//creates the questions that will be prompted to the user
-	var productInfo = {
-		properties: {
-			product_id:{description: colors.blue('Please enter the ID # of the item you wish to purchase!')},
-			stock_quantity:{description: colors.green('How many items would you like to purchase?')}
-		},
-	};//end product info
-
-	prompt.start();
-
-	//gets the responses to the prompts above
-	prompt.get(productInfo, function(err, res){
-
-		//places these responses in the variable custPurchase
-		var custPurchase = {
-			product_id: res.itemID,
-			stock_quantity: res.Quantity
-		};
 		
-		//the variable established above is pushed to the productPurchased array defined at the top of the page
-		productPurchased.push(custPurchase);
+	showMeProduct();
+//------------------------------------------------------------------------------------
+		//First function that prints the products. 
+	function showMeProduct() {
+ 	connection.query('SELECT * FROM bamazon_db.products ', function(err, result) {
+ 			 	if (err) throw err;
+ 		 	
+ 			
+ 				//console_log("result");
 
+
+ 				console.log(colors.red("------Welcome to Bamazon!!------")); 
+ 				console.log("							");
+
+ 			for (var i = 0; i < result.length; i++){
+				console.log(result[i].product_id + " " + "'" + 
+						result[i].product_name + "'" + " " + 
+						//result[i].DepartmentName + colors.green(" $") + 
+						result[i].price + " " + 
+						result[i].stock_quantity + colors.magenta(" Units"));	
+		}
+})
+ 	// prompt.message = colors.green("Your order:");
+  	
+  		var schema = {
+    			properties: {
+     	 			product_id: {
+        				message: colors.blue('Select your product by Id'),
+        				required: true
+      },
+     				quantity: {
+     					message: colors.blue('How many units of the product would you like to buy?'),
+        				required: true
+      }
+
+    }
+
+  };
+ 	prompt.get(schema, function (err, result) {
+ 				if (err) throw err;
+ 				 console.log('Command-line input received:');
+
+ 			var ordering = {
+ 				product_id: result.product_id,
+ 				quantity: result.stock_quantity
+ 			};	
+
+ 			var selection = result.product_id;
+ 			var	amount = result.quantity;
+
+ 				 showMeProduct();
+ 				checkingOut(selection,amount);
+ 		})
+
+}//end of function showMeProduct
+//------------------------------------------------------------------------------------
+	//Second function that let the user purchase the products.
+	function checkingOut(selection, amount) {
+		connection.query('SELECT * FROM bamazon_db.products WHERE product_id = ' + selection, function(err, result) {
+		if (err) throw err;
+
+			var productQ = selection -1;
+
+			 if(productQ > 0 ){
+			 	console.log("Sorry, Not enough in Stock");
+			 	
+			 } else {
+			 	for(var i = 1; i < result.length; i++){
+			 		console.log('The ' + result[i].product_name + 
+			 			' cost ' + colors.green(" $") + result[0].price );
+			 		console.log('Your Total is ' + colors.green(" $") + amount * result[productQ].Price);
+			 	}   											
+			 
+			 // updateProduct(selection,amount);
+		}
+		function exit() {
+	console.log("Thanks for using Bamazon!!!");
+	connection.end();
+}
+		
+	})
+
+}
+//------------------------------------------------------------------------------------
+	//Third Function that updates the Mysql data.
+	function updateProduct(selection, amount){
+		connection.query('UPDATE bamazon_db.products SET WHERE ? = product_id = ' + selection, function(err, result) {
+			console(selection);
+			showMeProduct();
 	});
 
-};//end purchase
-//connects to the mysql database and selects the item the user selected above based on the item id number entered
-		connection.query('SELECT * FROM Products WHERE product_id=?', productPurchased[0].product_id, function(err, res){
-				if(err) console.log(err, 'That item ID doesn\'t exist');
-				
-				//if the stock quantity available is less than the amount that the user wanted to purchase then the user will be alerted that the product is out of stock
-				if(res[0].stock_quantity < productPurchased[0].Quantity){
-					console.log('That product is out of stock!');
-					connection.end();
+};
 
-				//otherwise if the stock amount available is more than or equal to the amount being asked for then the purchase is continued and the user is alerted of what items are being purchased, how much one item is and what the total amount is
-				} else if(res[0].stock_quantity >= productPurchased[0].Quantity){
-
-					console.log('');
-
-					console.log(productPurchased[0].Quantity + ' items purchased');
-
-					console.log(res[0].ProductName + ' ' + res[0].Price);
-
-					//this creates the variable SaleTotal that contains the total amount the user is paying for this total puchase
-					var saleTotal = res[0].Price * productPurchased[0].Quantity;
-
-					
-
-					console.log('Total: ' + saleTotal);
-
-					//this variable contains the newly updated stock quantity of the item purchased
-					newQuantity = res[0].StockQuantity - productPurchased[0].Quantity;
-			
-					// connects to the mysql database products and updates the stock quantity for the item puchased
-					connection.query("UPDATE Products SET StockQuantity = " + newQuantity +" WHERE item_id = " + productPurchased[0].itemID, function(err, res){
-						// if(err) throw err;
-						// console.log('Problem ', err);
-						console.log('');
-						console.log(colors.cyan('Your order has been processed.  Thank you for shopping with us!'));
-						console.log('');
-
-						connection.end();
-					})
-
-				};
-
-		});
-
-
+ 
+// connection.end();
