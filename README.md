@@ -4,7 +4,7 @@ UT Coding Bootcamp. Our goal as students was to create an Amazon-like store fron
 
 ### Getting Started
 
-What Each JavaScript Does
+* What Each JavaScript Does
 
 ## bamazonustomer.js
 
@@ -43,16 +43,17 @@ If the manager selects End Session, it ends the session.
 
 ## bamazonexecutive.js
 
-### Starts with a menu:
+### Starts with a user friendly menu:
 
 * View Product Sales by Department
 * Create New Department
 * End Session
+
 If the manager selects View Product Sales by Department, it lists the Department Sales and calculates the total sales from the overhead cost and product sales.
 
 If the manager selects Create New Department, it allows the manager to create a new department and input current overhead costs and product sales. If there are none, by default it will set at 0, untill .
 
-If the manager selects End Session, it ends the session and send a positive message.
+If the manager selects End Session, and promts a positive good-bye message.
 
 
 # Technologies and NPM used for my Bamazon-APP
