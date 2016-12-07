@@ -55,7 +55,7 @@ connection.connect();
   };
  	prompt.get(schema, function (err, result) {
  				if (err) throw err;
- 				 console.log('Command-line input received:');
+ 					 console.log('Command-line input received:');
 
  			var ordering = {
  				product_id: result.product_id,
